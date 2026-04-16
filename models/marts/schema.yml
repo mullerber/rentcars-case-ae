@@ -1,0 +1,271 @@
+version: 2
+
+models:
+  - name: dim_partners
+    description: "Dimensão de parceiros no grão de uma linha por parceiro, com atributos cadastrais e comerciais padronizados para consumo analítico."
+    meta:
+      layer: marts
+      owner: data
+      domain: partners
+
+    columns:
+      - name: partner_id
+        description: "Identificador único do parceiro."
+        tests:
+          - not_null
+          - unique
+
+      - name: partner_name
+        description: "Nome comercial do parceiro."
+
+      - name: partner_country
+        description: "País principal de operação do parceiro."
+
+      - name: partner_tier
+        description: "Tier comercial do parceiro."
+
+      - name: partner_status
+        description: "Status padronizado do parceiro."
+
+      - name: commission_rate
+        description: "Taxa de comissão acordada com o parceiro."
+
+      - name: created_at
+        description: "Timestamp de criação do cadastro do parceiro."
+
+      - name: updated_at
+        description: "Timestamp da última atualização do parceiro."
+
+      - name: contact_email
+        description: "E-mail de contato operacional do parceiro."
+        meta:
+          pii: true
+
+      - name: is_invalid_commission_rate
+        description: "Flag que indica taxa de comissão fora da faixa esperada."
+
+      - name: is_active_partner
+        description: "Flag que indica se o parceiro está ativo."
+
+  - name: dim_users
+    description: "Dimensão de usuários no grão de uma linha por usuário, consolidando primeiros e últimos eventos de sessão e reserva."
+    meta:
+      layer: marts
+      owner: data
+      domain: users
+
+    columns:
+      - name: user_id
+        description: "Identificador único do usuário."
+        tests:
+          - not_null
+          - unique
+        meta:
+          pii: true
+
+      - name: first_session_at
+        description: "Timestamp da primeira sessão conhecida do usuário."
+
+      - name: last_session_at
+        description: "Timestamp da sessão mais recente conhecida do usuário."
+
+      - name: total_sessions
+        description: "Quantidade total de sessões associadas ao usuário."
+
+      - name: first_booking_at
+        description: "Timestamp da primeira reserva conhecida do usuário."
+
+      - name: last_booking_at
+        description: "Timestamp da reserva mais recente conhecida do usuário."
+
+      - name: total_bookings
+        description: "Quantidade total de reservas associadas ao usuário."
+
+  - name: fct_bookings
+    description: "Fato de reservas no grão de uma linha por booking, enriquecido com atributos do parceiro e informações de cancelamento."
+    meta:
+      layer: marts
+      owner: data
+      domain: bookings
+
+    columns:
+      - name: booking_id
+        description: "Identificador único da reserva."
+        tests:
+          - not_null
+          - unique
+
+      - name: session_id
+        description: "Sessão associada à reserva."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('fct_sessions')
+                field: session_id
+
+      - name: user_id
+        description: "Usuário associado à reserva, quando disponível."
+        meta:
+          pii: true
+
+      - name: partner_id
+        description: "Parceiro responsável pela reserva."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_partners')
+                field: partner_id
+
+      - name: booked_at
+        description: "Timestamp de criação da reserva."
+        tests:
+          - not_null
+
+      - name: pickup_date
+        description: "Data prevista de retirada do veículo."
+
+      - name: dropoff_date
+        description: "Data prevista de devolução do veículo."
+
+      - name: pickup_location
+        description: "Local de retirada do veículo."
+
+      - name: car_category
+        description: "Categoria do veículo reservado."
+
+      - name: daily_rate
+        description: "Valor da diária da reserva."
+
+      - name: total_amount
+        description: "Valor total bruto da reserva."
+
+      - name: currency
+        description: "Moeda da transação."
+
+      - name: booking_status
+        description: "Status padronizado da reserva."
+
+      - name: payment_method
+        description: "Forma de pagamento utilizada."
+
+      - name: partner_name
+        description: "Nome comercial do parceiro associado."
+
+      - name: partner_country
+        description: "País do parceiro associado."
+
+      - name: partner_tier
+        description: "Tier do parceiro associado."
+
+      - name: partner_status
+        description: "Status do parceiro associado."
+
+      - name: commission_rate
+        description: "Taxa de comissão do parceiro associado."
+
+      - name: cancellation_id
+        description: "Identificador do cancelamento, quando existir."
+
+      - name: cancelled_at
+        description: "Timestamp do cancelamento, quando existir."
+
+      - name: cancellation_reason
+        description: "Motivo do cancelamento."
+
+      - name: cancelled_by
+        description: "Origem do cancelamento."
+
+      - name: refund_amount
+        description: "Valor reembolsado ao cliente."
+
+      - name: refund_status
+        description: "Status do reembolso."
+
+      - name: days_before_pickup
+        description: "Dias entre o cancelamento e a data prevista de retirada."
+
+      - name: is_late_cancellation
+        description: "Flag que indica cancelamento tardio."
+
+      - name: has_cancellation
+        description: "Flag que indica se a reserva possui cancelamento associado."
+
+      - name: is_invalid_trip_dates
+        description: "Flag que indica inconsistência entre datas de retirada e devolução."
+
+      - name: is_negative_total_amount
+        description: "Flag que indica valor total negativo."
+
+      - name: is_zero_total_amount
+        description: "Flag que indica valor total igual a zero."
+
+      - name: is_high_total_amount
+        description: "Flag que indica valor total acima do limite de outlier adotado."
+
+      - name: is_valid_revenue_booking
+        description: "Flag que indica se a reserva é válida para compor métricas de receita."
+
+      - name: valid_revenue_amount
+        description: "Valor da reserva considerado válido para análise de receita."
+
+  - name: fct_sessions
+    description: "Fato de sessões no grão de uma linha por sessão, enriquecido com contagem de buscas e reservas."
+    meta:
+      layer: marts
+      owner: data
+      domain: sessions
+
+    columns:
+      - name: session_id
+        description: "Identificador único da sessão."
+        tests:
+          - not_null
+          - unique
+
+      - name: user_id
+        description: "Usuário associado à sessão, quando disponível."
+        meta:
+          pii: true
+
+      - name: started_at
+        description: "Timestamp de início da sessão."
+        tests:
+          - not_null
+
+      - name: ended_at
+        description: "Timestamp de encerramento da sessão, quando disponível."
+
+      - name: channel
+        description: "Canal de aquisição da sessão."
+
+      - name: device
+        description: "Dispositivo utilizado na sessão."
+
+      - name: country
+        description: "País de origem da sessão."
+
+      - name: page_views
+        description: "Quantidade de páginas visualizadas na sessão."
+
+      - name: utm_source
+        description: "Fonte UTM da sessão."
+
+      - name: utm_campaign
+        description: "Campanha UTM da sessão."
+
+      - name: is_bot
+        description: "Flag que indica se a sessão foi classificada como bot."
+
+      - name: total_searches
+        description: "Quantidade de buscas realizadas na sessão."
+
+      - name: total_bookings
+        description: "Quantidade de reservas realizadas na sessão."
+
+      - name: has_search
+        description: "Flag que indica se a sessão teve ao menos uma busca."
+
+      - name: has_booking
+        description: "Flag que indica se a sessão teve ao menos uma reserva."
