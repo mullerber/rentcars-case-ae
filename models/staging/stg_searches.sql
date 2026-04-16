@@ -17,7 +17,7 @@ deduplicated as (
 
 ),
 
-cleaned as (
+typed as (
 
     select
         search_id,
@@ -30,19 +30,31 @@ cleaned as (
         lower(car_category) as car_category,
         num_results,
         partner_id_clicked,
-        price_shown,
+        price_shown
+    from deduplicated
+    where row_num = 1
+
+),
+
+validated as (
+
+    select
+        *,
         case
             when dropoff_date is not null and dropoff_date < pickup_date then true
             else false
         end as is_invalid_trip_dates
-    from deduplicated
-    where row_num = 1
-        and not (
-            dropoff_date is not null
-            and dropoff_date < pickup_date
-  )
+    from typed
+
+),
+
+final as (
+
+    select *
+    from validated
+    where is_invalid_trip_dates = false
 
 )
 
 select *
-from cleaned
+from final

@@ -199,7 +199,7 @@ models:
       - name: currency
         description: "Moeda da transação."
         tests:
-          - not_null
+          - not_null #teste not_null
 
       - name: status
         description: "Status da reserva padronizado em lowercase."

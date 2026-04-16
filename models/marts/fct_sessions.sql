@@ -10,7 +10,7 @@ with source_data as (
     from {{ ref('int_sessions_enriched') }}
 
     {% if is_incremental() %}
-      where started_at > (select coalesce(max(started_at), cast('1900-01-01' as timestamp)) from {{ this }})
+      where started_at >=(select coalesce(max(started_at), cast('1900-01-01' as timestamp)) from {{ this }})
     {% endif %}
 
 ),

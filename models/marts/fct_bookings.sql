@@ -10,7 +10,7 @@ with source_data as (
     from {{ ref('int_bookings_enriched') }}
 
     {% if is_incremental() %}
-      where booked_at > (select coalesce(max(booked_at), cast('1900-01-01' as timestamp)) from {{ this }})
+      where booked_at >= (select coalesce(max(booked_at), cast('1900-01-01' as timestamp)) from {{ this }})
     {% endif %}
 
 ),

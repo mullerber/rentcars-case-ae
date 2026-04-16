@@ -1,6 +1,6 @@
 with sessions as (
 
-    select * from {{ ref('stg_sessions') }}
+    select * from {{ ref('stg_sessions') }} where coalesce(is_bot, false) = false
 
 ),
 
