@@ -1,0 +1,21 @@
+"partner_id","partner_name","partner_country","partner_tier","total_bookings","cancelled_bookings","cancellation_rate_pct","avg_cancellation_rate_pct","stddev_cancellation_rate_pct","z_score","is_outlier_gt_2sigma"
+PRT0004,Hertz,CL,,892,241,27.02,24.05,1.5,1.97,false
+PRT0020,TopDrive,BR,silver,934,247,26.45,24.05,1.5,1.59,false
+PRT0001,Localiza,CL,silver,920,234,25.43,24.05,1.5,0.92,false
+PRT0017,Flexways,AR,gold,902,229,25.39,24.05,1.5,0.89,false
+PRT0006,Budget,BR,bronze,878,222,25.28,24.05,1.5,0.82,false
+PRT0014,Sixt,US,bronze,922,231,25.05,24.05,1.5,0.66,false
+PRT0018,Rentcars Express,AR,silver,896,223,24.89,24.05,1.5,0.56,false
+PRT0009,Thrifty,CL,gold,888,220,24.77,24.05,1.5,0.48,false
+PRT0013,National,MX,,880,213,24.2,24.05,1.5,0.1,false
+PRT0003,Unidas,CL,gold,876,211,24.09,24.05,1.5,0.02,false
+PRT0015,OK Rent a Car,AR,gold,864,207,23.96,24.05,1.5,-0.06,false
+PRT0007,Enterprise,CL,bronze,910,216,23.74,24.05,1.5,-0.21,false
+PRT0010,Europcar,US,bronze,910,215,23.63,24.05,1.5,-0.28,false
+PRT0008,Dollar,AR,silver,854,201,23.54,24.05,1.5,-0.34,false
+PRT0016,Foco Rent a Car,AR,gold,875,202,23.09,24.05,1.5,-0.64,false
+PRT0019,EconoCar,CO,bronze,936,211,22.54,24.05,1.5,-1.01,false
+PRT0005,Avis,MX,bronze,904,202,22.35,24.05,1.5,-1.13,false
+PRT0011,Fox Rent A Car,AR,bronze,936,208,22.22,24.05,1.5,-1.22,false
+PRT0002,Movida,BR,gold,949,208,21.92,24.05,1.5,-1.42,false
+PRT0012,Alamo,AR,gold,878,189,21.53,24.05,1.5,-1.68,false

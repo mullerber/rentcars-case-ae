@@ -263,7 +263,7 @@ Dimensão no grão de uma linha por parceiro, contendo atributos cadastrais e co
 
 #### `dim_users`
 
-Dimensão derivada no grão de uma linha por usuário, consolidando primeira e última sessão, primeira e última reserva, além de contagens de sessões e reservas.
+Dimensão derivada no grão de uma linha por usuário, consolidando primeira e última sessão, primeira e última reserva, além de contagens de sessões e reservas. Na componente de sessões, foram consideradas apenas sessões analíticas com `is_bot = false`.
 
 #### `fct_bookings`
 
@@ -352,7 +352,7 @@ Exemplo de remediação aplicada:
 
 - Em `stg_bookings`, registros com datas inválidas foram mantidos e sinalizados via `is_invalid_trip_dates` para análise e controle de qualidade.
 
-- Em `int_sessions_enriched` e, por consequência, em `fct_sessions`, sessões marcadas como bot foram excluídas da camada analítica, em linha com a regra de negócio definida no dicionário de dados.
+- Em `int_sessions_enriched` e por consequencia na `fct_sessions` e na componente de sessões de `dim_users`, sessões marcadas como bot foram excluídas da camada analítica, em linha com a regra de negócio definida no dicionário de dados.
 
 ---
 
@@ -378,8 +378,9 @@ Exemplo de remediação aplicada:
   - `fct_bookings`
   - `fct_sessions`
 - facts incrementais funcionando
-- suíte dbt com execução e testes passando
-
+- suíte dbt com `dbt run` e `dbt test` executando com sucesso, totalizando 61 testes aprovados
+- `sql/queries.sql` com respostas para Q1 a Q5 do desafio analítico
+- resultados exportados em CSV na pasta `sql/results/`
 ---
 
 ## 14. Limitações conhecidas
@@ -388,7 +389,6 @@ Até esta etapa, o foco foi consolidar a fundação do projeto dbt.
 
 Os seguintes componentes ainda estão em evolução no repositório completo do case:
 
-- queries SQL analíticas do desafio 2
 - dashboard e apresentação do desafio 3
 - documentação completa de governança do desafio 4
 - artefatos de stakeholder discovery do desafio 5
@@ -415,7 +415,6 @@ Com mais tempo, as próximas melhorias seriam:
 
 ## 16. Próximos passos
 
-- consolidar `queries.sql` e gerar CSVs das perguntas analíticas
 - construir dashboard e slides
 - finalizar `governance.md`
 - finalizar `roteiro_entrevista.md`, `requisitos_tecnicos.md` e `data_contract.yaml`

@@ -1,0 +1,11 @@
+"partner_id","partner_name","partner_country","partner_tier","total_bookings","total_revenue","avg_booking_value"
+PRT0007,Enterprise,CL,bronze,221,765527.35,3463.92
+PRT0016,Foco Rent a Car,AR,gold,216,651943.03,3018.25
+PRT0011,Fox Rent A Car,AR,bronze,235,631883.38,2688.87
+PRT0017,Flexways,AR,gold,247,616887.57,2497.52
+PRT0013,National,MX,,221,604483.21,2735.22
+PRT0002,Movida,BR,gold,232,586601.86,2528.46
+PRT0015,OK Rent a Car,AR,gold,216,574458.47,2659.53
+PRT0014,Sixt,US,bronze,192,572926.25,2983.99
+PRT0001,Localiza,CL,silver,209,557757.17,2668.69
+PRT0003,Unidas,CL,gold,228,541844.4,2376.51

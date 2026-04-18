@@ -1,0 +1,2 @@
+"session_id","user_id","country","device","channel","is_bot","total_searches_in_session","max_searches_in_5min","first_suspicious_window_start","first_search_at","last_search_at"
+"28b5b573-835b-44a5-8b46-acd4e99b6d26",,BR,mobile,social_organic,false,42,74,2025-02-09 09:46:19.000,2025-01-15 10:20:16.000,2025-02-09 09:49:40.000

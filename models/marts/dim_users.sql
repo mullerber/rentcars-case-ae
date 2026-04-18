@@ -4,7 +4,7 @@ with sessions as (
         user_id,
         started_at
     from {{ ref('stg_sessions') }}
-    where user_id is not null
+    where user_id is not null and coalesce(is_bot, false) = false
 
 ),
 
