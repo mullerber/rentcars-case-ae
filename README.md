@@ -95,36 +95,41 @@ stg_sessions + stg_bookings ─────────────────�
 ## 6. Estrutura do projeto
 
 ```text
-rentcars_case/
-├── models/
-│   ├── staging/
-│   │   ├── sources.yml
-│   │   ├── schema.yml
-│   │   ├── stg_sessions.sql
-│   │   ├── stg_searches.sql
-│   │   ├── stg_bookings.sql
-│   │   ├── stg_cancellations.sql
-│   │   └── stg_partners.sql
-│   ├── intermediate/
-│   │   ├── schema.yml
-│   │   ├── int_bookings_enriched.sql
-│   │   └── int_sessions_enriched.sql
-│   └── marts/
-│       ├── schema.yml
-│       ├── dim_partners.sql
-│       ├── dim_users.sql
-│       ├── fct_bookings.sql
-│       └── fct_sessions.sql
-├── seeds/
-│   ├── raw_sessions.csv
-│   ├── raw_searches.csv
-│   ├── raw_bookings.csv
-│   ├── raw_cancellations.csv
-│   └── raw_partners.csv
-├── tests/
-│   └── generic/
-│       ├── test_valid_session_timing.sql
-│       └── test_valid_trip_dates.sql
+repo-case-ae-rentcars/
+├── dbt/
+│   ├── models/
+│   │   ├── staging/
+│   │   │   ├── sources.yml
+│   │   │   ├── schema.yml
+│   │   │   ├── stg_sessions.sql
+│   │   │   ├── stg_searches.sql
+│   │   │   ├── stg_bookings.sql
+│   │   │   ├── stg_cancellations.sql
+│   │   │   └── stg_partners.sql
+│   │   ├── intermediate/
+│   │   │   ├── schema.yml
+│   │   │   ├── int_bookings_enriched.sql
+│   │   │   └── int_sessions_enriched.sql
+│   │   └── marts/
+│   │       ├── schema.yml
+│   │       ├── dim_partners.sql
+│   │       ├── dim_users.sql
+│   │       ├── fct_bookings.sql
+│   │       └── fct_sessions.sql
+│   ├── seeds/
+│   │   ├── raw_sessions.csv
+│   │   ├── raw_searches.csv
+│   │   ├── raw_bookings.csv
+│   │   ├── raw_cancellations.csv
+│   │   └── raw_partners.csv
+│   ├── tests/
+│   │   └── generic/
+│   │       ├── test_valid_session_timing.sql
+│   │       └── test_valid_trip_dates.sql
+│   ├── analyses/
+│   ├── snapshots/
+│   ├── macros/
+│   └── dbt_project.yml
 ├── sql/
 │   ├── queries.sql
 │   └── results/
@@ -134,9 +139,6 @@ rentcars_case/
 │       ├── q4_suspected_bot_sessions.csv
 │       └── q5_partner_cancellation_outliers.csv
 ├── dashboard/
-│   ├── data
-│   │   ├── fct_bookings.csv
-│   │   └── fct_session.csv
 │   ├── dashboard.pdf
 │   ├── rentcars_dashboard_case.twbx
 │   └── slide_apresentacao.pdf
@@ -144,11 +146,7 @@ rentcars_case/
 │   ├── roteiro_entrevista.md
 │   ├── requisitos_tecnicos.md
 │   └── data_contract.yaml
-├── analyses/
-├── snapshots/
-├── macros/
 ├── governance.md
-├── dbt_project.yml
 ├── .gitignore
 └── README.md
 ```
