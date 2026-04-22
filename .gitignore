@@ -1,6 +1,7 @@
 target/
 dbt_packages/
 logs/
+.vscode/
 *.duckdb
 .env
 __pycache__/
