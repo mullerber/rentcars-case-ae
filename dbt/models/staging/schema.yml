@@ -1,0 +1,321 @@
+version: 2
+
+models:
+  # =========================
+  # STG_SESSIONS
+  # =========================
+  - name: stg_sessions
+    description: "Sessões de navegação tratadas, deduplicadas e padronizadas a partir da origem bruta."
+    tests:
+      - valid_session_timing: # teste customizado
+          arguments:
+            started_at_column: started_at
+            ended_at_column: ended_at
+
+    columns:
+      - name: session_id
+        description: "Identificador único da sessão."
+        tests:
+          - not_null
+          - unique
+
+      - name: user_id
+        description: "Identificador do usuário autenticado. Nulo indica sessão anônima."
+
+      - name: started_at
+        description: "Timestamp de início da sessão."
+        tests:
+          - not_null
+
+      - name: ended_at
+        description: "Timestamp de encerramento da sessão. Pode ser nulo quando a sessão não foi encerrada corretamente."
+
+      - name: channel
+        description: "Canal de aquisição da sessão."
+
+      - name: device
+        description: "Tipo de dispositivo padronizado em lowercase."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['desktop', 'mobile', 'tablet']
+
+      - name: country
+        description: "País de origem da sessão padronizado em uppercase no formato ISO 3166-1 alpha-2."
+        tests:
+          - not_null
+
+      - name: page_views
+        description: "Quantidade de páginas visualizadas na sessão."
+
+      - name: utm_source
+        description: "Fonte UTM da campanha. Pode ser nulo para tráfego não rastreado."
+
+      - name: utm_campaign
+        description: "Campanha UTM associada à sessão."
+
+      - name: is_bot
+        description: "Indicador booleano de sessão identificada como bot."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [true, false]
+
+      - name: is_invalid_session_timing
+        description: "Flag técnica para sessões em que ended_at é anterior a started_at."
+
+      - name: session_duration_seconds
+        description: "Duração da sessão em segundos calculada a partir de started_at e ended_at."
+
+  # =========================
+  # STG_SEARCHES
+  # =========================
+  - name: stg_searches
+    description: "Buscas tratadas, deduplicadas e padronizadas a partir da origem bruta."
+    tests:
+      - valid_trip_dates: #teste customizado
+          arguments:
+            pickup_date_column: pickup_date
+            dropoff_date_column: dropoff_date
+
+    columns:
+      - name: search_id
+        description: "Identificador único da busca após deduplicação."
+        tests:
+          - not_null
+          - unique
+
+      - name: session_id
+        description: "Sessão associada à busca."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_sessions')
+                field: session_id
+
+      - name: searched_at
+        description: "Timestamp em que a busca foi realizada."
+        tests:
+          - not_null
+
+      - name: pickup_location
+        description: "Local de retirada padronizado."
+
+      - name: dropoff_location
+        description: "Local de devolução padronizado."
+
+      - name: pickup_date
+        description: "Data desejada para retirada."
+        tests:
+          - not_null
+
+      - name: dropoff_date
+        description: "Data desejada para devolução."
+
+      - name: car_category
+        description: "Categoria do veículo filtrada na busca."
+
+      - name: num_results
+        description: "Quantidade de resultados retornados."
+
+      - name: partner_id_clicked
+        description: "Parceiro clicado pelo usuário, quando houver."
+        tests:
+          - relationships:
+              arguments:
+                to: ref('stg_partners')
+                field: partner_id
+              config:
+                where: "partner_id_clicked is not null"
+
+      - name: price_shown
+        description: "Menor preço exibido na busca."
+
+      - name: is_invalid_trip_dates
+        description: "Flag técnica para buscas com dropoff_date anterior a pickup_date."
+
+  # =========================
+  # STG_BOOKINGS
+  # =========================
+  - name: stg_bookings
+    description: "Reservas tratadas, deduplicadas e padronizadas a partir da origem bruta."
+
+    columns:
+      - name: booking_id
+        description: "Identificador único da reserva após deduplicação."
+        tests:
+          - not_null
+          - unique
+
+      - name: session_id
+        description: "Sessão em que a reserva foi realizada."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_sessions')
+                field: session_id
+
+      - name: user_id
+        description: "Identificador do usuário associado à reserva."
+
+      - name: partner_id
+        description: "Parceiro responsável pela reserva."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_partners')
+                field: partner_id
+
+      - name: booked_at
+        description: "Timestamp em que a reserva foi realizada."
+        tests:
+          - not_null
+
+      - name: pickup_date
+        description: "Data de retirada do veículo."
+        tests:
+          - not_null
+
+      - name: dropoff_date
+        description: "Data de devolução do veículo."
+
+      - name: pickup_location
+        description: "Local de retirada padronizado."
+
+      - name: car_category
+        description: "Categoria do veículo reservada."
+
+      - name: daily_rate
+        description: "Valor da diária da locação."
+
+      - name: total_amount
+        description: "Valor total da reserva."
+
+      - name: currency
+        description: "Moeda da transação."
+        tests:
+          - not_null #teste not_null
+
+      - name: status
+        description: "Status da reserva padronizado em lowercase."
+        tests:
+          - not_null
+          - accepted_values: #teste accepted_values
+              arguments:
+                values: ['confirmed', 'pending', 'cancelled', 'no_show', 'completed']
+
+      - name: payment_method
+        description: "Forma de pagamento utilizada."
+
+      - name: is_invalid_trip_dates
+        description: "Flag técnica para reservas com dropoff_date anterior a pickup_date."
+
+      - name: is_negative_total_amount
+        description: "Flag técnica para reservas com total_amount negativo."
+
+      - name: is_zero_total_amount
+        description: "Flag técnica para reservas com total_amount zerado."
+
+      - name: is_high_total_amount
+        description: "Flag técnica para reservas com total_amount acima de 15000."
+
+  # =========================
+  # STG_CANCELLATIONS
+  # =========================
+  - name: stg_cancellations
+    description: "Cancelamentos tratados, deduplicados e padronizados a partir da origem bruta."
+
+    columns:
+      - name: cancellation_id
+        description: "Identificador único do cancelamento após deduplicação."
+        tests:
+          - not_null
+          - unique
+
+      - name: booking_id
+        description: "Reserva associada ao cancelamento."
+        tests:
+          - not_null
+          - relationships: #teste relationships
+              arguments:
+                to: ref('stg_bookings')
+                field: booking_id
+
+      - name: cancelled_at
+        description: "Timestamp em que o cancelamento foi realizado."
+        tests:
+          - not_null
+
+      - name: reason
+        description: "Motivo declarado do cancelamento."
+
+      - name: cancelled_by
+        description: "Origem do cancelamento."
+
+      - name: refund_amount
+        description: "Valor reembolsado ao cliente."
+
+      - name: refund_status
+        description: "Status do reembolso."
+
+      - name: days_before_pickup
+        description: "Dias entre o cancelamento e a data de retirada."
+
+      - name: is_late_cancellation
+        description: "Flag técnica para cancelamentos com days_before_pickup negativo."
+
+  # =========================
+  # STG_PARTNERS
+  # =========================
+  - name: stg_partners
+    description: "Parceiros tratados, deduplicados e padronizados a partir da origem bruta."
+
+    columns:
+      - name: partner_id
+        description: "Identificador único do parceiro após deduplicação."
+        tests:
+          - not_null
+          - unique
+
+      - name: partner_name
+        description: "Nome comercial do parceiro."
+        tests:
+          - not_null
+
+      - name: country
+        description: "País principal de operação do parceiro padronizado em uppercase."
+
+      - name: tier
+        description: "Tier comercial do parceiro padronizado em lowercase."
+
+      - name: status
+        description: "Status do parceiro padronizado em lowercase."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['active', 'inactive', 'suspended']
+
+      - name: commission_rate
+        description: "Taxa de comissão acordada com o parceiro."
+        tests:
+          - not_null
+
+      - name: created_at
+        description: "Data de criação do cadastro do parceiro."
+        tests:
+          - not_null
+
+      - name: updated_at
+        description: "Data da última atualização do cadastro."
+
+      - name: contact_email
+        description: "E-mail de contato operacional do parceiro."
+
+      - name: is_invalid_commission_rate
+        description: "Flag técnica para comissão fora da faixa esperada de 0.05 a 0.30."

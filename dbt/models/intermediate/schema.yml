@@ -1,0 +1,179 @@
+version: 2
+
+models:
+  - name: int_bookings_enriched
+    description: "Reservas enriquecidas com dados de cancelamento e parceiro, prontas para suportar lógica analítica e marts."
+
+    columns:
+      - name: booking_id
+        description: "Identificador único da reserva."
+        tests:
+          - not_null
+          - unique
+
+      - name: session_id
+        description: "Sessão associada à reserva."
+        tests:
+          - not_null #teste not_null
+
+      - name: user_id
+        description: "Usuário associado à reserva."
+
+      - name: partner_id
+        description: "Parceiro responsável pela reserva."
+        tests:
+          - not_null
+
+      - name: partner_name
+        description: "Nome comercial do parceiro."
+
+      - name: partner_country
+        description: "País do parceiro."
+
+      - name: partner_tier
+        description: "Tier comercial do parceiro."
+
+      - name: partner_status
+        description: "Status do parceiro."
+
+      - name: commission_rate
+        description: "Taxa de comissão do parceiro."
+
+      - name: booked_at
+        description: "Timestamp de criação da reserva."
+        tests:
+          - not_null
+
+      - name: pickup_date
+        description: "Data de retirada."
+
+      - name: dropoff_date
+        description: "Data de devolução."
+
+      - name: pickup_location
+        description: "Local de retirada."
+
+      - name: car_category
+        description: "Categoria do veículo."
+
+      - name: daily_rate
+        description: "Valor da diária."
+
+      - name: total_amount
+        description: "Valor total da reserva."
+
+      - name: currency
+        description: "Moeda da transação."
+
+      - name: booking_status
+        description: "Status da reserva."
+
+      - name: payment_method
+        description: "Forma de pagamento."
+
+      - name: is_invalid_trip_dates
+        description: "Flag que indica se a data de devolução é anterior à data de retirada."
+
+      - name: is_negative_total_amount
+        description: "Flag que indica se o valor total da reserva é negativo."
+
+      - name: is_zero_total_amount
+        description: "Flag que indica se o valor total da reserva é zero."
+
+      - name: is_high_total_amount
+        description: "Flag que indica se o valor total da reserva está acima do limite de outlier definido."
+
+      - name: cancellation_id
+        description: "Identificador do cancelamento, quando existir."
+
+      - name: cancelled_at
+        description: "Timestamp do cancelamento."
+
+      - name: cancellation_reason
+        description: "Motivo do cancelamento."
+
+      - name: cancelled_by
+        description: "Origem do cancelamento."
+
+      - name: refund_amount
+        description: "Valor reembolsado."
+
+      - name: refund_status
+        description: "Status do reembolso."
+
+      - name: days_before_pickup
+        description: "Dias entre cancelamento e retirada."
+
+      - name: is_late_cancellation
+        description: "Flag que indica cancelamento realizado após a data planejada de retirada."
+
+      - name: has_cancellation
+        description: "Flag que indica se a reserva possui cancelamento associado."
+
+      - name: is_valid_revenue_booking
+        description: "Flag técnica para reservas válidas para análise de receita."
+
+      - name: valid_revenue_amount
+        description: "Valor da reserva considerado válido para análise de receita."
+
+    meta:
+      layer: intermediate
+      owner: data
+      domain: bookings
+
+  - name: int_sessions_enriched
+    description: "Modelo intermediate no grão de uma linha por sessão, enriquecido com contagem de buscas e reservas."
+
+    columns:
+      - name: session_id
+        description: "Identificador único da sessão."
+        tests:
+          - not_null
+          - unique #teste unique
+
+      - name: user_id
+        description: "Identificador do usuário autenticado, quando disponível."
+
+      - name: started_at
+        description: "Timestamp de início da sessão."
+
+      - name: ended_at
+        description: "Timestamp de fim da sessão, quando disponível."
+
+      - name: channel
+        description: "Canal de aquisição da sessão."
+
+      - name: device
+        description: "Dispositivo padronizado da sessão."
+
+      - name: country
+        description: "País padronizado da sessão."
+
+      - name: page_views
+        description: "Quantidade de páginas visualizadas na sessão."
+
+      - name: utm_source
+        description: "Fonte UTM associada à sessão."
+
+      - name: utm_campaign
+        description: "Campanha UTM associada à sessão."
+
+      - name: is_bot
+        description: "Indica se a sessão foi classificada como bot."
+
+      - name: total_searches
+        description: "Quantidade de buscas realizadas na sessão."
+
+      - name: total_bookings
+        description: "Quantidade de reservas realizadas na sessão."
+
+      - name: has_search
+        description: "Indica se a sessão teve ao menos uma busca."
+
+      - name: has_booking
+        description: "Indica se a sessão teve ao menos uma reserva."
+
+    meta:
+      layer: intermediate
+      owner: data
+      domain: sessions
