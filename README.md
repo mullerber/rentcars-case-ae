@@ -132,7 +132,7 @@ rentcars_case/
 │       ├── q2_top_10_partners_revenue_90d.csv
 │       ├── q3_ltv_by_user_cohort.csv
 │       ├── q4_suspected_bot_sessions.csv
-│        q5_partner_cancellation_outliers.csv
+│       ├── q5_partner_cancellation_outliers.csv
 ├── dashboard/
 │   ├── data
 │   │   ├── fct_bookings.csv
