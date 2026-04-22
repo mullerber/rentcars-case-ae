@@ -1,0 +1,217 @@
+version: 1
+contract_name: revenue_pricing_metrics_contract
+area: Revenue / Pricing
+status: proposed
+context: >
+  Mini data contract proposto para o case técnico da Rentcars. Como se trata de um
+  case externo, sem acesso ao contexto interno da empresa, as definições abaixo foram
+  estruturadas como proposta de padronização, ancoradas no dicionário de dados, nos
+  modelos dbt implementados e nas análises realizadas.
+
+scope:
+  primary_models:
+    - fct_sessions
+    - fct_bookings
+    - dim_partners
+    - dim_users
+  supported_use_cases:
+    - acompanhamento de receita
+    - análise de conversão
+    - monitoramento de cancelamentos
+    - priorização de parceiros
+    - análise de cohort e valor do usuário
+
+general_rules:
+  refresh_frequency: daily
+  trusted_data_condition: >
+    Dados considerados confiáveis apenas após execução bem-sucedida de dbt run
+    e dbt test, sem falhas em testes críticos.
+  critical_test_requirements:
+    - unique
+    - not_null
+    - relationships
+    - valid_session_timing
+    - valid_trip_dates
+  pii_policy:
+    - user_id deve ser tratado como identificador pseudonimizado
+    - contact_email não deve ser exposto em dashboards executivos
+    - métricas devem priorizar agregação em vez de exposição de identificadores
+
+metrics:
+
+  - name: valid_revenue_amount
+    business_definition: >
+      Valor da reserva considerado elegível para análise comercial e analítica, após
+      exclusão de reservas inconsistentes ou não aderentes às regras de negócio.
+    source_model: fct_bookings
+    grain: booking
+    logic: >
+      Soma de valid_revenue_amount para reservas com booking válido do ponto de vista
+      analítico.
+    filters:
+      - excluir reservas com inconsistências críticas de valor
+      - excluir reservas com inconsistências críticas de datas
+      - considerar parceiro ativo
+    owner_area: Revenue / Pricing
+    owner_role: Revenue Manager
+    sla:
+      refresh: daily
+      available_until: "09:00"
+      quality_threshold: "0 falhas em testes críticos"
+    criticality: high
+    notes: >
+      Esta é a métrica recomendada para dashboards executivos e análises de performance.
+      Foi criada para evitar ambiguidade no uso do termo genérico receita.
+
+  - name: session_to_booking_conversion_rate
+    business_definition: >
+      Percentual de sessões analíticas que resultam em ao menos uma reserva.
+    source_model: fct_sessions
+    grain: session
+    logic: >
+      count(session_id com has_booking = true) / count(session_id)
+    filters:
+      - considerar apenas sessões analíticas
+      - excluir sessões bot
+    owner_area: Revenue / Pricing
+    owner_role: Pricing Analyst
+    sla:
+      refresh: daily
+      available_until: "09:00"
+      quality_threshold: "0 falhas em testes críticos e 0 falhas em regras de timing"
+    criticality: high
+    notes: >
+      Métrica principal de conversão em nível de sessão.
+
+  - name: search_to_booking_conversion_rate
+    business_definition: >
+      Percentual de sessões com busca que também resultam em reserva.
+    source_model: fct_sessions
+    grain: session
+    logic: >
+      count(session_id com has_booking = true) / count(session_id com has_search = true)
+    filters:
+      - considerar apenas sessões analíticas
+      - excluir sessões bot
+    owner_area: Revenue / Pricing
+    owner_role: Pricing Analyst
+    sla:
+      refresh: daily
+      available_until: "09:00"
+      quality_threshold: "0 falhas em testes críticos"
+    criticality: medium
+    notes: >
+      Métrica útil para analisar a eficiência da segunda metade do funil.
+
+  - name: cancellation_rate
+    business_definition: >
+      Percentual de reservas canceladas em relação ao total de reservas da base
+      analítica considerada.
+    source_model: fct_bookings
+    grain: booking
+    logic: >
+      count(booking_id com booking_status = 'cancelled' ou has_cancellation = true)
+      / count(booking_id)
+    filters:
+      - usar base deduplicada de bookings
+    owner_area: Revenue / Pricing
+    owner_role: Revenue Operations Analyst
+    sla:
+      refresh: daily
+      available_until: "09:00"
+      quality_threshold: "0 falhas em testes críticos"
+    criticality: high
+    notes: >
+      Esta é a definição adotada para o case. Caso a empresa prefira outra regra de
+      denominador, uma variação da métrica pode ser formalizada separadamente.
+
+  - name: avg_ticket
+    business_definition: >
+      Valor médio das reservas consideradas válidas para análise de receita.
+    source_model: fct_bookings
+    grain: booking
+    logic: >
+      avg(valid_revenue_amount) para reservas com valid_revenue_amount não nulo
+    filters:
+      - excluir reservas sem receita válida
+    owner_area: Revenue / Pricing
+    owner_role: Pricing Analyst
+    sla:
+      refresh: daily
+      available_until: "09:00"
+      quality_threshold: "0 falhas em testes críticos"
+    criticality: medium
+    notes: >
+      Indicador útil para comparar parceiros, tiers e países.
+
+  - name: observed_ltv
+    business_definition: >
+      Soma da receita válida observada por usuário dentro do período disponível
+      no dataset, sem projeção futura de valor de vida do cliente.
+    source_models:
+      - dim_users
+      - fct_bookings
+    grain: user
+    logic: >
+      soma(valid_revenue_amount) por user_id, agrupando por cohort de first_session_at
+      quando aplicável
+    filters:
+      - excluir cancelamentos da leitura de receita válida
+      - usar apenas usuários com first_session_at preenchido
+    owner_area: Revenue / Pricing
+    owner_role: Revenue Analyst
+    sla:
+      refresh: daily
+      available_until: "09:00"
+      quality_threshold: "0 falhas em testes críticos"
+    criticality: medium
+    notes: >
+      Métrica útil para análises de cohort. Não representa projeção completa de
+      lifetime value, apenas o valor observado no período disponível.
+
+dimensions:
+
+  - name: partner_tier
+    business_definition: Classificação comercial do parceiro em níveis como gold, silver e bronze.
+    source_model: dim_partners
+
+  - name: partner_country
+    business_definition: País principal de operação do parceiro.
+    source_model: dim_partners
+
+  - name: session_country
+    business_definition: País de origem da sessão.
+    source_model: fct_sessions
+
+  - name: device
+    business_definition: Tipo de dispositivo utilizado na sessão.
+    source_model: fct_sessions
+
+  - name: booking_status
+    business_definition: Status atual da reserva na base analítica.
+    source_model: fct_bookings
+
+conflicts:
+
+  - metric_name: revenue
+    conflict_description: >
+      A área de Revenue / Pricing pode querer uma leitura comercial de receita,
+      enquanto Finance ou Operações podem adotar critérios mais conservadores.
+    competing_definitions:
+      - receita bruta da reserva
+      - receita válida para análise comercial
+    arbitration_proposal: >
+      Evitar o uso do termo genérico receita sem qualificador. Em dashboards e análises,
+      a métrica deve ser explicitamente nomeada conforme a definição adotada.
+    recommended_default_for_this_case: valid_revenue_amount
+
+  - metric_name: cancellation_rate
+    conflict_description: >
+      Diferentes áreas podem defender denominadores diferentes para a taxa de cancelamento.
+    competing_definitions:
+      - cancelamentos / total de reservas
+      - cancelamentos / reservas confirmadas
+    arbitration_proposal: >
+      Formalizar a versão operacional como padrão analítico do case e, se necessário,
+      criar uma segunda versão para consumo financeiro.
+    recommended_default_for_this_case: cancelamentos / total de reservas
