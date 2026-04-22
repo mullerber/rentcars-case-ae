@@ -127,7 +127,7 @@ rentcars_case/
 │       └── test_valid_trip_dates.sql
 ├── sql/
 │   ├── queries.sql
-   └── results/
+│   └── results/
 │       ├── q1_funnel_country_device.csv
 │       ├── q2_top_10_partners_revenue_90d.csv
 │       ├── q3_ltv_by_user_cohort.csv
